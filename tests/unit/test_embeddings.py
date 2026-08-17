@@ -18,15 +18,20 @@ def test_embed_documents_returns_embeddings() -> None:
     ]
 
     with patch(
-        "chatbot_rag.retrieval.embeddings.OpenAIEmbeddings",
+        "chatbot_rag.retrieval.embeddings.OllamaEmbeddings",
         return_value=fake_embeddings,
-    ):
-        embeddings = embed_documents(documents)
+    ) as mock_embeddings:
+        result = embed_documents(documents)
 
-    assert embeddings == [
+    assert result == [
         [0.1, 0.2, 0.3],
         [0.4, 0.5, 0.6],
     ]
+
+    mock_embeddings.assert_called_once_with(
+        model="nomic-embed-text",
+    )
+
     fake_embeddings.embed_documents.assert_called_once_with(
         [
             "Python is a programming language.",
