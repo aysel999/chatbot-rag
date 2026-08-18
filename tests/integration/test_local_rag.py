@@ -1,9 +1,11 @@
-from langchain_core.documents import Document
-from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
+from langchain_core.documents import Document
+from langchain_ollama import ChatOllama, OllamaEmbeddings
+
+from chatbot_rag.rag.service import RAGService
 
 
-def test_local_chroma_can_store_and_retrieve_documents() -> None:
+def test_local_rag_can_retrieve_and_answer() -> None:
     documents = [
         Document(
             page_content="Python was created by Guido van Rossum.",
@@ -22,10 +24,13 @@ def test_local_chroma_can_store_and_retrieve_documents() -> None:
         embedding=embeddings,
     )
 
-    results = vector_store.similarity_search(
-        "Who created Python?",
-        k=1,
+    model = ChatOllama(model="gemma4:e2b")
+
+    service = RAGService(
+        vector_store=vector_store,
+        model=model,
     )
 
-    assert len(results) == 1
-    assert "Guido van Rossum" in results[0].page_content
+    result = service.ask("Who created Python?")
+
+    assert "Guido van Rossum" in result

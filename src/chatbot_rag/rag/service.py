@@ -12,9 +12,14 @@ class RAGService:
             k=4,
         )
 
-        context = "\n\n".join(document.page_content for document in documents)
+        context = "\n\n".join(
+            document.page_content for document in documents
+        )
 
         prompt = f"""Answer the question using only the provided context.
+
+If the answer is not contained in the context, say:
+"I don't know based on the provided documents."
 
 Context:
 {context}
