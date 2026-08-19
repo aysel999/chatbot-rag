@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 
 import streamlit as st
@@ -18,12 +19,19 @@ def create_rag_service(vector_store) -> RAGService:
 
 def process_uploaded_file(uploaded_file):
     suffix = Path(uploaded_file.name).suffix
-    temp_path = Path("uploaded_document" + suffix)
 
-    temp_path.write_bytes(uploaded_file.getvalue())
+    with tempfile.NamedTemporaryFile(
+        suffix=suffix,
+        delete=False,
+    ) as temp_file:
+        temp_file.write(uploaded_file.getvalue())
+        temp_path = Path(temp_file.name)
 
-    service = ApplicationService()
-    return service.process_file(temp_path)
+    try:
+        service = ApplicationService()
+        return service.process_file(temp_path)
+    finally:
+        temp_path.unlink(missing_ok=True)
 
 
 st.title("Chatbot RAG")
